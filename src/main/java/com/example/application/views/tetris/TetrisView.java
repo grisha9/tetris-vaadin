@@ -1,40 +1,85 @@
 package com.example.application.views.tetris;
 
+import com.example.application.views.about.TView;
 import com.example.application.views.main.MainView;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyDownEvent;
 import com.vaadin.flow.component.KeyUpEvent;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.vaadin.pekkam.Canvas;
 import org.vaadin.pekkam.CanvasRenderingContext2D;
+import ru.rzn.gmyasoedov.tetris.core.MultiPlayerFigureGenerator;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 import ru.rzn.gmyasoedov.tetris.core.TetrisState;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 @Route(value = "tetris", layout = MainView.class)
-
 @PageTitle("Tetris")
-public class TetrisView extends VerticalLayout {
+public class TetrisView extends Div {
 
-    private static final int CELL = 50;
-    private static final int WIDTH = 50 * 10;
-    private static final int HEIGHT = 50 * 20;
     private Tetris tetris;
     private Button start;
     private Button left;
     private Button right;
     private Button rotate;
-    private final Canvas canvasField;
-    private final Canvas canvasNext;
-    private final Label scoreLabel;
 
     public TetrisView() {
-        addClassName("hello-world-view");
+        addClassName("tetris-view");
+        List<TView> grisha1 = IntStream.range(0, 2).mapToObj(i -> new TView(20, "Grisha")).collect(Collectors.toList());
+        HorizontalLayout layout = new HorizontalLayout();
+        grisha1.forEach(layout::add);
+
+        List<TView> grisha2 = IntStream.range(0, 0).mapToObj(i -> new TView(30, "Grisha")).collect(Collectors.toList());
+        HorizontalLayout layout2 = new HorizontalLayout();
+        grisha2.forEach(layout2::add);
+
+        List<TView> grisha3 = IntStream.range(0, 0).mapToObj(i -> new TView(30, "Grisha")).collect(Collectors.toList());
+        HorizontalLayout layout3 = new HorizontalLayout();
+        grisha3.forEach(layout3::add);
+
+        VerticalLayout verticalLayout = new VerticalLayout();
+        verticalLayout.add(layout, layout2, layout3);
+        add(verticalLayout);
+
+        ArrayList<TView> grisha = new ArrayList<>();
+        grisha.addAll(grisha1);
+        grisha.addAll(grisha2);
+        grisha.addAll(grisha3);
+
+        UI.getCurrent().addShortcutListener(e -> startTetris(grisha), Key.SPACE);
+        UI.getCurrent().addShortcutListener(e -> tetris.toLeft(), Key.ARROW_LEFT);
+        UI.getCurrent().addShortcutListener(e -> tetris.toRight(), Key.ARROW_RIGHT);
+        UI.getCurrent().addShortcutListener(e -> tetris.rotate(), Key.ARROW_UP);
+        //UI.getCurrent().addShortcutListener(e -> tetris.fastSpeed(), Key.ARROW_DOWN);
+        UI.getCurrent().addShortcutListener(e -> tetris.rotate(), Key.KEY_Z);
+        UI.getCurrent().addShortcutListener(e -> tetris.rotateReverse(), Key.KEY_X);
+        UI.getCurrent().addShortcutListener(e -> tetris.fastSpeed(), Key.KEY_A);
+        UI.getCurrent().addShortcutListener(e -> tetris.normalSpeed(), Key.KEY_S);
+        UI.getCurrent().addShortcutListener(e -> tetris.pauseOrResume(), Key.KEY_P);
+
+    }
+
+    /*public TetrisView() {
+        addClassName("tetris-view");
         start = new Button("Start");
         left = new Button("left");
         right = new Button("right");
@@ -49,7 +94,7 @@ public class TetrisView extends VerticalLayout {
         //ctx.setFillStyle("green");
         ctx.strokeRect(0, 0, WIDTH, HEIGHT);
 
-        add(start);
+        add(start, left);
         add(left);
         add(right);
         add(rotate);
@@ -57,7 +102,7 @@ public class TetrisView extends VerticalLayout {
         add(canvasNext);
         add(scoreLabel);
 
-        setHorizontalComponentAlignment(Alignment.CENTER);
+        setVerticalComponentAlignment(Alignment.CENTER);
 
 
         start.addClickListener(e -> startTetris());
@@ -76,41 +121,45 @@ public class TetrisView extends VerticalLayout {
         UI.getCurrent().addShortcutListener(e -> tetris.fastSpeed(), Key.KEY_A);
         UI.getCurrent().addShortcutListener(e -> tetris.normSpeed(), Key.KEY_S);
 
-    }
+    }*/
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-
         addListener(KeyDownEvent.class, e -> {
+            Notification.show("bbbbbb");
             if (e.getKey().getKeys().equals(Key.ARROW_DOWN.getKeys())) {
                 tetris.fastSpeed();
             }
         });
         addListener(KeyUpEvent.class, e -> {
+            Notification.show("zzzz");
             if (e.getKey().getKeys().equals(Key.ARROW_DOWN.getKeys())) {
-                tetris.normSpeed();
+                tetris.normalSpeed();
             }
         });
     }
 
-    private void startTetris() {
+    private void startTetris(Collection<TView> grisha) {
         if (tetris != null) {
             tetris.stop();
         }
-        tetris = new Tetris();
-        tetris.addObserver(this::observer);
+        MultiPlayerFigureGenerator generator = new MultiPlayerFigureGenerator();
+        tetris = new Tetris(generator);
+        tetris.addObserver(s -> grisha.forEach(g -> g.observer(s)));
         tetris.start();
+
     }
 
 
-    private void observer(TetrisState state) {
+   /* private void observer(TetrisState state) {
         getUI().ifPresent(ui -> ui.access(() -> renderView(state)));
     }
 
     private void renderView(TetrisState state) {
         CanvasRenderingContext2D ctx = canvasField.getContext();
         //ctx.setFillStyle("blue");
+        //ctx.setStrokeStyle("blue");
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
         ctx.strokeRect(0, 0, WIDTH, HEIGHT);
         int[][] field = state.getField();
@@ -118,7 +167,7 @@ public class TetrisView extends VerticalLayout {
             int[] row = field[i];
             for (int j = 0; j < row.length; j++) {
                 if (field[i][j] > 0) {
-                    drawCell(ctx, i, j);
+                    ctx.fillRect(j * CELL + 1, i * CELL + 1, CELL - 2, CELL - 2);
                 }
             }
         }
@@ -143,5 +192,5 @@ public class TetrisView extends VerticalLayout {
 
         ctx.fillRect(j * CELL + 1, i * CELL + 1, CELL - 2, CELL - 2);
         //ctx.fillRect(j * CELL + 1, i * CELL + 1, CELL - 1, CELL - 1);
-    }
+    }*/
 }

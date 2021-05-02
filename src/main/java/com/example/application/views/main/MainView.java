@@ -3,10 +3,13 @@ package com.example.application.views.main;
 import java.util.Optional;
 
 import com.example.application.views.tetris.TetrisView;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyDownEvent;
 import com.vaadin.flow.component.KeyUpEvent;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -108,4 +111,21 @@ public class MainView extends AppLayout {
         return menu.getChildren().filter(tab -> ComponentUtil.getData(tab, Class.class).equals(component.getClass()))
                 .findFirst().map(Tab.class::cast);
     }
+
+   /* @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        addListener(KeyDownEvent.class, e -> {
+            Notification.show("bbbbbb");
+            if (e.getKey().getKeys().equals(Key.ARROW_DOWN.getKeys())) {
+
+            }
+        });
+        addListener(KeyUpEvent.class, e -> {
+            Notification.show("zzzz");
+            if (e.getKey().getKeys().equals(Key.ARROW_DOWN.getKeys())) {
+
+            }
+        });
+    }*/
 }

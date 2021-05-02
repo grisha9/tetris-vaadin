@@ -30,24 +30,8 @@ public class HelloWorldView extends HorizontalLayout {
         name = new TextField("Your name");
         sayHello = new Button("Say hello");
 
-        Canvas canvas = new Canvas(800, 500);
-        CanvasRenderingContext2D ctx = canvas.getContext();
+        add(name, sayHello);
 
-        // Draw a red line from point (10,10) to (100,100):
-        ctx.setStrokeStyle("red");
-        ctx.beginPath();
-        ctx.moveTo(10, 10);
-        ctx.lineTo(100, 100);
-        ctx.closePath();
-        ctx.stroke();
-
-
-        //ctx.strokeRect(20,20, 200, 200);
-        ctx.setFillStyle("green");
-        ctx.fillRect(0, 0, 200, 200);
-        ctx.stroke();
-
-        add(name, sayHello, canvas);
 
 
         setVerticalComponentAlignment(Alignment.END, name, sayHello);
