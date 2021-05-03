@@ -17,8 +17,8 @@ import com.vaadin.flow.shared.ui.Transport;
 import org.vaadin.pekkam.Canvas;
 import org.vaadin.pekkam.CanvasRenderingContext2D;
 
-@Route(value = "hello", layout = MainView.class)
-@RouteAlias(value = "", layout = MainView.class)
+//@Route(value = "hello", layout = MainView.class)
+//@RouteAlias(value = "", layout = MainView.class)
 @PageTitle("Hello World")
 public class HelloWorldView extends HorizontalLayout {
 

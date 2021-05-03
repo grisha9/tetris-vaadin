@@ -1,40 +1,28 @@
 package com.example.application.views.tetris;
 
 import com.example.application.views.about.TView;
-import com.example.application.views.main.MainView;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.KeyDownEvent;
-import com.vaadin.flow.component.KeyUpEvent;
-import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import org.vaadin.pekkam.Canvas;
-import org.vaadin.pekkam.CanvasRenderingContext2D;
 import ru.rzn.gmyasoedov.tetris.core.MultiPlayerFigureGenerator;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
-import ru.rzn.gmyasoedov.tetris.core.TetrisState;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-@Route(value = "tetris", layout = MainView.class)
+//@Route(value = "tetris", layout = MainView.class)
 @PageTitle("Tetris")
-public class TetrisView extends Div {
+public class TetrisView extends Div implements KeyNotifier{
 
     private Tetris tetris;
     private Button start;
@@ -75,6 +63,8 @@ public class TetrisView extends Div {
         UI.getCurrent().addShortcutListener(e -> tetris.fastSpeed(), Key.KEY_A);
         UI.getCurrent().addShortcutListener(e -> tetris.normalSpeed(), Key.KEY_S);
         UI.getCurrent().addShortcutListener(e -> tetris.pauseOrResume(), Key.KEY_P);
+        addKeyDownListener(Key.ARROW_DOWN, e -> Notification.show("dd"));
+        addKeyUpListener(Key.ARROW_DOWN, e -> Notification.show("uuu"));
 
     }
 
@@ -126,7 +116,7 @@ public class TetrisView extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        addListener(KeyDownEvent.class, e -> {
+        /*addListener(KeyDownEvent.class, e -> {
             Notification.show("bbbbbb");
             if (e.getKey().getKeys().equals(Key.ARROW_DOWN.getKeys())) {
                 tetris.fastSpeed();
@@ -137,7 +127,7 @@ public class TetrisView extends Div {
             if (e.getKey().getKeys().equals(Key.ARROW_DOWN.getKeys())) {
                 tetris.normalSpeed();
             }
-        });
+        });*/
     }
 
     private void startTetris(Collection<TView> grisha) {
@@ -145,7 +135,7 @@ public class TetrisView extends Div {
             tetris.stop();
         }
         MultiPlayerFigureGenerator generator = new MultiPlayerFigureGenerator();
-        tetris = new Tetris(generator);
+        tetris = new Tetris(generator,"5");
         tetris.addObserver(s -> grisha.forEach(g -> g.observer(s)));
         tetris.start();
 

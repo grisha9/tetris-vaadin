@@ -1,7 +1,5 @@
 package com.example.application.views.about;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
@@ -13,11 +11,7 @@ import org.vaadin.pekkam.CanvasRenderingContext2D;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 import ru.rzn.gmyasoedov.tetris.core.TetrisState;
 
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-
-import static java.util.Objects.requireNonNullElse;
 
 public class TView extends Div {
 
@@ -51,7 +45,7 @@ public class TView extends Div {
         ctx.setFont("bold " + Math.round(cellSizePx * 1.5) + "px Ubuntu Mono");
 
         VerticalLayout verticalLayout = new VerticalLayout();
-        Label nameLabel = new Label(requireNonNullElse(name, ""));
+        Label nameLabel = new Label(getName(name));
         nameLabel.getStyle().set("font-weight", "bold");
         Label scoreLabel = new Label("score");
         score = new Label("");
@@ -75,6 +69,14 @@ public class TView extends Div {
         horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, canvasField, verticalLayout);
         add(horizontalLayout);
 
+    }
+
+    private String getName(String name) {
+        name = name == null ? "" : name;
+        if (name.length() > 9) {
+            name = name.substring(0, 9);
+        }
+        return name;
     }
 
     private void addTextFontSize(Label label, int cellSizePx) {

@@ -17,7 +17,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.example.application.views.main.MainView;
 
-@Route(value = "card-list", layout = MainView.class)
+//@Route(value = "card-list", layout = MainView.class)
 @PageTitle("Card List")
 public class CardListView extends Div implements AfterNavigationObserver {
 

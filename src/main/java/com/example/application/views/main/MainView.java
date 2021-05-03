@@ -1,62 +1,67 @@
 package com.example.application.views.main;
 
-import java.util.Optional;
-
-import com.example.application.views.tetris.TetrisView;
+import com.example.application.service.GameHolderService;
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyDownEvent;
-import com.vaadin.flow.component.KeyUpEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.TabVariant;
-import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.PageTitle;
-import com.example.application.views.main.MainView;
-import com.example.application.views.helloworld.HelloWorldView;
-import com.example.application.views.about.AboutView;
-import com.example.application.views.cardlist.CardListView;
-import com.example.application.views.masterdetail.MasterDetailView;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.UUID;
 
 
 /**
  * The main view is a top-level placeholder for other views.
  */
+@Route("")
 public class MainView extends AppLayout {
+    private final GameHolderService gameHolderService;
 
-    private final Tabs menu;
+    public MainView(GameHolderService gameHolderService, @Autowired SessionService bean, @Autowired MultiPlayerContentView bean1) {
+        this.gameHolderService = gameHolderService;
 
-    public MainView() {
         HorizontalLayout header = createHeader();
-        menu = createMenuTabs();
-        addToNavbar(createTopBar(header, menu));
+        addToNavbar(createTopBar(header));
+
+        /*addKeyDownListener(Key.ARROW_DOWN, e -> Notification.show("dd111"));
+        addKeyUpListener(Key.ARROW_DOWN, e -> Notification.show("uuu111"));
+        addKeyPressListener(Key.KEY_A, e ->  Notification.show("2222"));*/
+        addListener(KeyDownEvent.class, e -> Notification.show("22-dd"));
     }
 
-    private VerticalLayout createTopBar(HorizontalLayout header, Tabs menu) {
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        addListener(KeyDownEvent.class, e -> Notification.show("22-dd"));
+        /*addKeyDownListener(Key.ARROW_DOWN, e -> Notification.show("dd111"));
+        addKeyUpListener(Key.ARROW_DOWN, e -> Notification.show("uuu111"));
+        addKeyPressListener(Key.KEY_A, e ->  Notification.show("2222"));*/
+    }
+
+    private VerticalLayout createTopBar(HorizontalLayout header) {
         VerticalLayout layout = new VerticalLayout();
         layout.getThemeList().add("dark");
         layout.setWidthFull();
         layout.setSpacing(false);
         layout.setPadding(false);
         layout.setAlignItems(FlexComponent.Alignment.CENTER);
-        layout.add(header, menu);
+        Button singleGame = new Button("single game", e -> setContent(new Label("sg")));
+        Button multiplayerGame = new Button("multiplayer game", e -> setContent(new Label("mg")));
+        multiplayerGame.addClickListener(e -> {
+            String id = UUID.randomUUID().toString();
+            gameHolderService.createGame(id, UI.getCurrent().getSession().getSession().getId());
+            UI.getCurrent().navigate("multiplayer/" + id);
+        });
+        layout.add(header, new HorizontalLayout(singleGame, multiplayerGame));
         return layout;
     }
 
@@ -67,65 +72,13 @@ public class MainView extends AppLayout {
         header.setWidthFull();
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.setId("header");
-        Image logo = new Image("images/logo.png", "TetrisVaadin logo");
+        Image logo = new Image("images/logo.png", "Tetris logo");
         logo.setId("logo");
         header.add(logo);
-        Avatar avatar = new Avatar();
-        avatar.setId("avatar");
-        header.add(new H1("TetrisVaadin"));
-        header.add(avatar);
+        header.add(new H1("Tetris"));
         return header;
     }
 
-    private static Tabs createMenuTabs() {
-        final Tabs tabs = new Tabs();
-        tabs.getStyle().set("max-width", "100%");
-        tabs.add(getAvailableTabs());
-        return tabs;
-    }
-
-    private static Tab[] getAvailableTabs() {
-        return new Tab[]{
-                createTab("TetrisView", TetrisView.class),
-                createTab("Hello World", HelloWorldView.class),
-                createTab("About", AboutView.class),
-                createTab("Card List", CardListView.class),
-                createTab("Master-Detail", MasterDetailView.class)};
-    }
-
-    private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
-        final Tab tab = new Tab();
-        tab.addThemeVariants(TabVariant.LUMO_ICON_ON_TOP);
-        tab.add(new RouterLink(text, navigationTarget));
-        ComponentUtil.setData(tab, Class.class, navigationTarget);
-        return tab;
-    }
-
-    @Override
-    protected void afterNavigation() {
-        super.afterNavigation();
-        getTabForComponent(getContent()).ifPresent(menu::setSelectedTab);
-    }
-
-    private Optional<Tab> getTabForComponent(Component component) {
-        return menu.getChildren().filter(tab -> ComponentUtil.getData(tab, Class.class).equals(component.getClass()))
-                .findFirst().map(Tab.class::cast);
-    }
-
-   /* @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        addListener(KeyDownEvent.class, e -> {
-            Notification.show("bbbbbb");
-            if (e.getKey().getKeys().equals(Key.ARROW_DOWN.getKeys())) {
-
-            }
-        });
-        addListener(KeyUpEvent.class, e -> {
-            Notification.show("zzzz");
-            if (e.getKey().getKeys().equals(Key.ARROW_DOWN.getKeys())) {
-
-            }
-        });
-    }*/
 }
+
+
