@@ -79,7 +79,6 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
             if (gameHolder.getOwnerSessionId().equals(sessionId)) {
                 startGame.setVisible(true);
                 startGame.addClickListener(e -> {
-                    gameHolder.block();
                     Collection<MultiPlayerContentView> views = gameHolder.getViews();
                     Collection<Tetris> players = gameHolder.getPlayers();
                     for (Tetris tetris : players) {

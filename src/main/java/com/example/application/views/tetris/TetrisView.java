@@ -11,7 +11,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
-import ru.rzn.gmyasoedov.tetris.core.MultiPlayerFigureGenerator;
+import ru.rzn.gmyasoedov.tetris.core.FigureGenerator;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 
 import java.util.ArrayList;
@@ -134,8 +134,7 @@ public class TetrisView extends Div implements KeyNotifier{
         if (tetris != null) {
             tetris.stop();
         }
-        MultiPlayerFigureGenerator generator = new MultiPlayerFigureGenerator();
-        tetris = new Tetris(generator,"5");
+        tetris = new Tetris(new FigureGenerator(),"5");
         tetris.addObserver(s -> grisha.forEach(g -> g.observer(s)));
         tetris.start();
 
