@@ -24,23 +24,27 @@ public class TView extends Div {
     private final int cellSizePx;
     private final Label score;
     private final Label labelLevel;
+    private final String color;
 
-    public TView(int cellSizePx, String name) {
+    public TView(int cellSizePx, String name, String color) {
         //addClassName("t-view");
+        this.color = color;
         setId(UUID.randomUUID().toString());
         getStyle().set("border", (cellSizePx / 4) + "px solid");
         getStyle().set("padding", (cellSizePx / 4) + "px");
+        getStyle().set("color", color);
         setWidth(15 * cellSizePx, Unit.PIXELS);
 
         this.cellSizePx = cellSizePx;
-        widthField = 10 * cellSizePx;
-        heightField = 20 * cellSizePx;
-        canvasField = new Canvas(widthField, heightField);
-        widthNext = 4 * cellSizePx;
-        heightNext = 4 * cellSizePx;
-        canvasNext = new Canvas(widthNext, heightNext);
+        this.widthField = 10 * cellSizePx;
+        this.heightField = 20 * cellSizePx;
+        this.canvasField = new Canvas(widthField, heightField);
+        this.widthNext = 4 * cellSizePx;
+        this.heightNext = 4 * cellSizePx;
+        this.canvasNext = new Canvas(widthNext, heightNext);
 
         CanvasRenderingContext2D ctx = canvasField.getContext();
+        ctx.setStrokeStyle(color);
         ctx.strokeRect(0, 0, widthField, heightField);
         ctx.setFont("bold " + Math.round(cellSizePx * 1.5) + "px Ubuntu Mono");
 
@@ -106,6 +110,7 @@ public class TView extends Div {
 
     private void drawField(TetrisState state, CanvasRenderingContext2D ctx) {
         ctx.clearRect(0, 0, widthField, heightField);
+        ctx.setStrokeStyle(color);
         ctx.strokeRect(0, 0, widthField, heightField);
         drawMatrix(ctx, state.getField());
 
@@ -131,6 +136,7 @@ public class TView extends Div {
     }
 
     private void drawCell(CanvasRenderingContext2D ctx, int i, int j) {
+        ctx.setFillStyle(color);
         ctx.fillRect(j * cellSizePx + 1, i * cellSizePx + 1, cellSizePx - 2, cellSizePx - 2);
     }
 

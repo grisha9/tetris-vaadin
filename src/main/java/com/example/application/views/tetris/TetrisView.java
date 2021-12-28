@@ -2,23 +2,14 @@ package com.example.application.views.tetris;
 
 import com.example.application.views.about.TView;
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import ru.rzn.gmyasoedov.tetris.core.FigureGenerator;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 //@Route(value = "tetris", layout = MainView.class)
 @PageTitle("Tetris")
@@ -30,7 +21,7 @@ public class TetrisView extends Div implements KeyNotifier{
     private Button right;
     private Button rotate;
 
-    public TetrisView() {
+   /* public TetrisView() {
         addClassName("tetris-view");
         List<TView> grisha1 = IntStream.range(0, 2).mapToObj(i -> new TView(20, "Grisha")).collect(Collectors.toList());
         HorizontalLayout layout = new HorizontalLayout();
@@ -66,7 +57,7 @@ public class TetrisView extends Div implements KeyNotifier{
         addKeyDownListener(Key.ARROW_DOWN, e -> Notification.show("dd"));
         addKeyUpListener(Key.ARROW_DOWN, e -> Notification.show("uuu"));
 
-    }
+    }*/
 
     /*public TetrisView() {
         addClassName("tetris-view");

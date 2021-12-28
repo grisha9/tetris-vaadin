@@ -2,6 +2,7 @@ package com.example.application.views.main;
 
 import com.example.application.service.GameHolder;
 import com.example.application.views.about.TView;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachNotifier;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
@@ -13,9 +14,13 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 import ru.rzn.gmyasoedov.tetris.core.TetrisState;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static com.example.application.service.GameHolder.MAX_PLAYER_LIMIT;
 
 @SpringComponent
 @UIScope
@@ -65,17 +70,38 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
             if (tetris == null) {
                 throw new IllegalStateException("no game " + sessionId);
             }
-            HorizontalLayout layout = new HorizontalLayout();
+
             Map<String, TView> viewMap = new HashMap<>();
+            List<TView> tetrisViews = new ArrayList<>(gameHolder.getPlayers().size());
             gameHolder.getPlayers().forEach(tetris -> {
-                TView tetrisView = new TView(30, tetris.getId());
+                TView tetrisView = new TView(30, tetris.getId(), null);
+                tetrisViews.add(tetrisView);
                 viewMap.put(tetris.getId(), tetrisView);
-                layout.add(tetrisView);
             });
             tetrisViewByPlayer = viewMap;
-            add(layout);
-
+            add(getLayout(tetrisViews));
         }));
+    }
+
+    private Component getLayout(List<TView> tetrisViews) {
+        if (tetrisViews.size() < (MAX_PLAYER_LIMIT / 2)) {
+            HorizontalLayout layout = new HorizontalLayout();
+            tetrisViews.forEach(layout::add);
+            return layout;
+        }
+
+        HorizontalLayout layout1 = new HorizontalLayout();
+        HorizontalLayout layout2 = new HorizontalLayout();
+        VerticalLayout verticalLayout = new VerticalLayout(layout1, layout2);
+        int lineSize = (int) Math.ceil(tetrisViews.size() / 2.0);
+        for (int i = 0; i < tetrisViews.size(); i++) {
+            if (i < lineSize) {
+                layout1.add(tetrisViews.get(i));
+            } else {
+                layout2.add(tetrisViews.get(i));
+            }
+        }
+        return new HorizontalLayout(verticalLayout);
     }
 
     void renderTetrisView(TetrisState state) {
