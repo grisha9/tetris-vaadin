@@ -14,7 +14,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
 
@@ -26,7 +25,7 @@ import java.util.UUID;
 public class MainView extends AppLayout {
     private final GameHolderService gameHolderService;
 
-    public MainView(GameHolderService gameHolderService, @Autowired SessionService bean, @Autowired MultiPlayerContentView bean1) {
+    public MainView(GameHolderService gameHolderService) {
         this.gameHolderService = gameHolderService;
 
         HorizontalLayout header = createHeader();
@@ -56,6 +55,11 @@ public class MainView extends AppLayout {
         layout.setAlignItems(FlexComponent.Alignment.CENTER);
         Button singleGame = new Button("single game", e -> setContent(new Label("sg")));
         Button multiplayerGame = new Button("multiplayer game", e -> setContent(new Label("mg")));
+        singleGame.addClickListener(e -> {
+            String id = UUID.randomUUID().toString();
+            gameHolderService.createGame(id, UI.getCurrent().getSession().getSession().getId());
+            UI.getCurrent().navigate("singleplayer/" + id);
+        });
         multiplayerGame.addClickListener(e -> {
             String id = UUID.randomUUID().toString();
             gameHolderService.createGame(id, UI.getCurrent().getSession().getSession().getId());
