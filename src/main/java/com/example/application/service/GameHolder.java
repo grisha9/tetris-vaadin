@@ -19,6 +19,7 @@ public class GameHolder {
     private final String ownerSessionId;
     private final long figureGeneratorSeed;
     private final Map<String, Tetris> gameBySessionId = new ConcurrentHashMap<>();
+    private final Map<String, String> colorByTetrisId = new ConcurrentHashMap<>();
     private final Map<String, MultiPlayerContentView> viewBySessionId = new ConcurrentHashMap<>();
     private final Collection<Tetris> gameList = new ArrayBlockingQueue<>(MAX_PLAYER_LIMIT);
 
@@ -40,7 +41,7 @@ public class GameHolder {
         return ownerSessionId;
     }
 
-    public synchronized void addPlayer(String sessionId, String name) {
+    public synchronized void addPlayer(String sessionId, String name, String color) {
         if (gameBySessionId.size() >= MAX_PLAYER_LIMIT) {
             throw new IllegalStateException("max player limit " + MAX_PLAYER_LIMIT);
         }
@@ -49,6 +50,9 @@ public class GameHolder {
                 .putIfAbsent(requireNonNull(sessionId), new Tetris(generator, requireNonNull(name)));
         if (tetris != null) {
             throw new IllegalStateException("player already exist");
+        }
+        if (color != null) {
+            colorByTetrisId.put(name, color);
         }
         gameList.add(gameBySessionId.get(sessionId));
     }
@@ -67,5 +71,9 @@ public class GameHolder {
 
     public synchronized void newPlayerBroadcastAll(GameHolder message) {
         viewBySessionId.values().forEach(v -> v.renderView(message));
+    }
+
+    public String getGameColor(String tetrisId) {
+        return colorByTetrisId.get(tetrisId);
     }
 }

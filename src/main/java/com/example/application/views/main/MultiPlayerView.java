@@ -3,17 +3,23 @@ package com.example.application.views.main;
 import com.example.application.service.GameHolder;
 import com.example.application.service.GameHolderService;
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
@@ -21,14 +27,17 @@ import com.vaadin.flow.server.VaadinSession;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 
 import java.util.Collection;
+import java.util.List;
 
 @Route("multiplayer")
 public class MultiPlayerView extends AppLayout implements HasUrlParameter<String> {
 
     private final GameHolderService gameHolderService;
     private final MultiPlayerContentView multiPlayerContentView;
-    private GameHolder gameHolder;//todo volatile or modify in single UI thread? (i am think single thread)
+    private GameHolder gameHolder;
     private Button startGame;
+    private TextField textField;
+    private long lastFocusTextFieldUpdate = 0;
 
     public MultiPlayerView(GameHolderService gameHolderService,
                            MultiPlayerContentView multiPlayerContentView) {
@@ -38,8 +47,8 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
         HorizontalLayout header = createHeader();
         addToNavbar(createTopBar(header));
         setContent(multiPlayerContentView);
-        multiPlayerContentView.setJustifyContentMode ( FlexComponent.JustifyContentMode.CENTER ); // Put content in the middle horizontally.
-        multiPlayerContentView.setDefaultHorizontalComponentAlignment( FlexComponent.Alignment.CENTER ); // Put content in the middle vertically.
+        multiPlayerContentView.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Put content in the middle horizontally.
+        multiPlayerContentView.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER); // Put content in the middle vertically.
     }
 
     private HorizontalLayout createHeader() {
@@ -50,8 +59,14 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
         header.setWidthFull();
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.setId("header");
+
+        textField = new TextField();
+        textField.setAutofocus(true);
+        textField.setWidth(1, Unit.MM);
+
         Image logo = new Image("images/logo.png", "Tetris logo");
         logo.setId("logo");
+        header.add(textField);
         header.add(logo);
         header.add(new H1("Tetris multi player"));
         return header;
@@ -74,6 +89,15 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         multiPlayerContentView.renderView(gameHolder);
+        textField.addKeyDownListener(Key.ARROW_DOWN, e -> multiPlayerContentView.fastSpeed());
+        textField.addKeyUpListener(Key.ARROW_DOWN, e -> multiPlayerContentView.normalSpeed());
+        UI.getCurrent().addShortcutListener(e -> {
+            long currentTimeMillis = System.currentTimeMillis();
+            if (lastFocusTextFieldUpdate == 0 || Math.abs(currentTimeMillis - lastFocusTextFieldUpdate) > 3000) {
+                textField.focus();
+                lastFocusTextFieldUpdate = currentTimeMillis;
+            }
+        }, Key.ARROW_DOWN);
         getUI().ifPresent(ui -> ui.access(() -> {
             String sessionId = ui.getSession().getSession().getId();
             if (gameHolder.getOwnerSessionId().equals(sessionId)) {
@@ -88,6 +112,7 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
                     }
                     players.forEach(Tetris::start);
                     startGame.setVisible(false);
+                    textField.focus();
                 });
             }
         }));
@@ -101,26 +126,47 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
         }
         this.gameHolder = gameHolder;
         String sessionId = VaadinSession.getCurrent().getSession().getId();
-        System.out.println("setParam " + Thread.currentThread());
-        System.out.println("created " + sessionId);
         Tetris game = gameHolder.getGame(sessionId);
         if (game != null) {
             gameHolder.addView(sessionId, multiPlayerContentView);
             multiPlayerContentView.addKeyListiners();
         } else {
+            List<String> colors = List
+                    .of("BLACK", "RED", "ORANGE", "BLUE", "GREEN", "CYAN", "MAGENTA", "PINK", "YELLOW");
+            Select<String> select = new Select<>();
+            select.setLabel("Color");
+            select.setItems(colors);
+            select.setEmptySelectionAllowed(false);
+            select.setValue(colors.get(0));
+            select.setRenderer(new ComponentRenderer<>(color -> {
+                FlexLayout wrapper = new FlexLayout();
+                wrapper.setAlignItems(FlexComponent.Alignment.CENTER);
+
+                Div info = new Div();
+                info.getStyle().set("background", color);
+                info.getStyle().set("width", HasSize.getCssSize(100, Unit.PIXELS));
+                info.getStyle().set("height", HasSize.getCssSize(10, Unit.PIXELS));
+
+                wrapper.add(info);
+                return wrapper;
+            }));
+
+
             TextField textField = new TextField();
+            textField.setLabel("Name");
             textField.setMaxLength(9);
             textField.setMinLength(3);
             textField.setAutofocus(true);
-            HorizontalLayout layout = new HorizontalLayout(new Text("Name"), textField);
-            layout.setAlignItems(FlexComponent.Alignment.CENTER);
+            VerticalLayout verticalLayout = new VerticalLayout(textField, select);
             Dialog dialog = new Dialog();
-            dialog.add(layout);
+            dialog.add(verticalLayout);
+            Button ok = new Button("Ok", e -> {
+                dialog.close();
+                addPlayer(gameHolder, sessionId, textField.getValue(), select.getValue());
+            });
+            ok.addClickShortcut(Key.ENTER);
             dialog.add(new HorizontalLayout(
-                    new Button("Ok", e -> {
-                        dialog.close();
-                        addPlayer(gameHolder, sessionId, textField.getValue());
-                    }),
+                    ok,
                     new Button("Cancel", e -> {
                         dialog.close();
                         UI.getCurrent().navigate("");
@@ -130,8 +176,8 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
         }
     }
 
-    private void addPlayer(GameHolder gameHolder, String sessionId, String name) {
-        gameHolder.addPlayer(sessionId, name);
+    private void addPlayer(GameHolder gameHolder, String sessionId, String name, String color) {
+        gameHolder.addPlayer(sessionId, name, color);
         gameHolder.addView(sessionId, multiPlayerContentView);
         multiPlayerContentView.addKeyListiners();
         gameHolder.newPlayerBroadcastAll(gameHolder);//render view

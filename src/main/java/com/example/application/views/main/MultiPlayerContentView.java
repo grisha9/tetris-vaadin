@@ -40,9 +40,6 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
             if (tetris != null) tetris.rotate();
         }, Key.ARROW_UP);
         UI.getCurrent().addShortcutListener(e -> {
-            if (tetris != null) tetris.fastSpeed();
-        }, Key.ARROW_DOWN);
-        UI.getCurrent().addShortcutListener(e -> {
             if (tetris != null) tetris.rotate();
         }, Key.KEY_Z);
         UI.getCurrent().addShortcutListener(e -> {
@@ -74,7 +71,7 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
             Map<String, TView> viewMap = new HashMap<>();
             List<TView> tetrisViews = new ArrayList<>(gameHolder.getPlayers().size());
             gameHolder.getPlayers().forEach(tetris -> {
-                TView tetrisView = new TView(30, tetris.getId(), null);
+                TView tetrisView = new TView(30, tetris.getId(), gameHolder.getGameColor(tetris.getId()));
                 tetrisViews.add(tetrisView);
                 viewMap.put(tetris.getId(), tetrisView);
             });
@@ -111,4 +108,15 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
         }
     }
 
+    void fastSpeed() {
+        if (tetris != null && tetris.getState() == Tetris.State.GAME) {
+            tetris.fastSpeed();
+        }
+    }
+
+    void normalSpeed() {
+        if (tetris != null && tetris.getState() == Tetris.State.GAME) {
+            tetris.normalSpeed();
+        }
+    }
 }
