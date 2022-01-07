@@ -30,9 +30,17 @@ public class GameHolderService {
     @Scheduled(fixedDelay = 100_000)
     public void removeOldGames() {
         gameById.values().stream()
-                .filter(g -> g.getPlayers().stream().allMatch(t -> t.getState() == Tetris.State.GAME))
+                .filter(this::isReadyForRemoval)
                 .map(GameHolder::getId)
                 .collect(Collectors.toList())
                 .forEach(gameById::remove);
+    }
+
+    private boolean isReadyForRemoval(GameHolder gameHolder) {
+        if (!gameHolder.isStarted()) {
+            return Math.abs(System.currentTimeMillis() - gameHolder.getCreationTimeMillis()) > 300000;
+        } else {
+            return gameHolder.getPlayers().stream().allMatch(t -> t.getState() == Tetris.State.OVER);
+        }
     }
 }

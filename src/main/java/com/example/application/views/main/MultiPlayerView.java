@@ -103,6 +103,7 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
             if (gameHolder.getOwnerSessionId().equals(sessionId)) {
                 startGame.setVisible(true);
                 startGame.addClickListener(e -> {
+                    gameHolder.setStarted(true);
                     Collection<MultiPlayerContentView> views = gameHolder.getViews();
                     Collection<Tetris> players = gameHolder.getPlayers();
                     for (Tetris tetris : players) {
@@ -131,6 +132,9 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
             gameHolder.addView(sessionId, multiPlayerContentView);
             multiPlayerContentView.addKeyListiners();
         } else {
+            if (gameHolder.isStarted()) {
+                throw new IllegalStateException("game is already started");
+            }
             List<String> colors = List
                     .of("BLACK", "RED", "ORANGE", "BLUE", "GREEN", "CYAN", "MAGENTA", "PINK", "YELLOW");
             Select<String> select = new Select<>();
