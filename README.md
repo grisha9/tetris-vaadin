@@ -45,3 +45,4 @@ You can now also attach breakpoints in code for debugging purposes, by clicking 
 docker
  docker push grisha9/tetris-vaadin
  docker build -t grisha9/tetris-vaadin .
+ docker run --name tetris -d  -p 8080:8080 grisha9/tetris-vaadin:latest

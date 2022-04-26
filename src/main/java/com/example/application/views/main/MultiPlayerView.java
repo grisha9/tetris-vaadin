@@ -136,7 +136,7 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
                 throw new IllegalStateException("game is already started");
             }
             List<String> colors = List
-                    .of("BLACK", "RED", "ORANGE", "BLUE", "GREEN", "CYAN", "MAGENTA", "PINK", "YELLOW");
+                    .of("BLACK", "RED", "ORANGE", "BLUE", "GREEN", "MAGENTA", "PINK");
             Select<String> select = new Select<>();
             select.setLabel("Color");
             select.setItems(colors);
