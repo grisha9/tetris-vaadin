@@ -1,7 +1,7 @@
 package com.example.application.views.main;
 
 import com.example.application.service.GameHolder;
-import com.example.application.views.about.TView;
+import com.example.application.views.tertis.TetrisView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachNotifier;
 import com.vaadin.flow.component.Key;
@@ -26,7 +26,7 @@ import static com.example.application.service.GameHolder.MAX_PLAYER_LIMIT;
 @UIScope
 public class MultiPlayerContentView extends VerticalLayout implements KeyNotifier, DetachNotifier {
 
-    private volatile Map<String, TView> tetrisViewByPlayer = Collections.emptyMap();
+    private volatile Map<String, TetrisView> tetrisViewByPlayer = Collections.emptyMap();
     private Tetris tetris;
 
     public void addKeyListiners() {
@@ -68,10 +68,10 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
                 throw new IllegalStateException("no game " + sessionId);
             }
 
-            Map<String, TView> viewMap = new HashMap<>();
-            List<TView> tetrisViews = new ArrayList<>(gameHolder.getPlayers().size());
+            Map<String, TetrisView> viewMap = new HashMap<>();
+            List<TetrisView> tetrisViews = new ArrayList<>(gameHolder.getPlayers().size());
             gameHolder.getPlayers().forEach(tetris -> {
-                TView tetrisView = new TView(25, tetris.getId(), gameHolder.getGameColor(tetris.getId()));
+                TetrisView tetrisView = new TetrisView(25, tetris.getId(), gameHolder.getGameColor(tetris.getId()));
                 tetrisViews.add(tetrisView);
                 viewMap.put(tetris.getId(), tetrisView);
             });
@@ -80,7 +80,7 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
         }));
     }
 
-    private Component getLayout(List<TView> tetrisViews) {
+    private Component getLayout(List<TetrisView> tetrisViews) {
         if (tetrisViews.size() < (MAX_PLAYER_LIMIT / 2)) {
             HorizontalLayout layout = new HorizontalLayout();
             tetrisViews.forEach(layout::add);
@@ -102,9 +102,9 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
     }
 
     void renderTetrisView(TetrisState state) {
-        TView tView = tetrisViewByPlayer.get(state.getGameId());
-        if (tView != null) {
-            tView.observer(state);
+        TetrisView tetrisView = tetrisViewByPlayer.get(state.getGameId());
+        if (tetrisView != null) {
+            tetrisView.observer(state);
         }
     }
 

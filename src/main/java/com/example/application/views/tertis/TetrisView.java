@@ -1,4 +1,4 @@
-package com.example.application.views.about;
+package com.example.application.views.tertis;
 
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.html.Div;
@@ -13,10 +13,9 @@ import ru.rzn.gmyasoedov.tetris.core.TetrisState;
 
 import java.util.UUID;
 
-public class TView extends Div {
+public class TetrisView extends Div {
 
-    private final int widthField;
-    private final int heightField;
+    public static final String BACKGROUND_COLOR = "#F8F8F8";
     private final int widthNext;
     private final int heightNext;
     private final Canvas canvasField;
@@ -26,7 +25,7 @@ public class TView extends Div {
     private final Label labelLevel;
     private final String color;
 
-    public TView(int cellSizePx, String name, String color) {
+    public TetrisView(int cellSizePx, String name, String color) {
         //addClassName("t-view");
         this.color = color;
         setId(UUID.randomUUID().toString());
@@ -36,8 +35,8 @@ public class TView extends Div {
         setWidth(15 * cellSizePx, Unit.PIXELS);
 
         this.cellSizePx = cellSizePx;
-        this.widthField = 10 * cellSizePx;
-        this.heightField = 20 * cellSizePx;
+        int widthField = 10 * cellSizePx;
+        int heightField = 20 * cellSizePx;
         this.canvasField = new Canvas(widthField, heightField);
         this.widthNext = 4 * cellSizePx;
         this.heightNext = 4 * cellSizePx;
@@ -47,6 +46,7 @@ public class TView extends Div {
         ctx.setStrokeStyle(color);
         ctx.strokeRect(0, 0, widthField, heightField);
         ctx.setFont("bold " + Math.round(cellSizePx * 1.5) + "px Ubuntu Mono");
+        drawEmptyMatrix(ctx);
 
         VerticalLayout verticalLayout = new VerticalLayout();
         Label nameLabel = new Label(getName(name));
@@ -105,14 +105,11 @@ public class TView extends Div {
 
     private void drawNextFigure(TetrisState state, CanvasRenderingContext2D ctx) {
         ctx.clearRect(0, 0, widthNext, heightNext);
-        drawMatrix(ctx, state.getNextFigure());
+        drawMatrix(ctx, state.getNextFigure(), "#FFFFFF");
     }
 
     private void drawField(TetrisState state, CanvasRenderingContext2D ctx) {
-        ctx.clearRect(0, 0, widthField, heightField);
-        ctx.setStrokeStyle(color);
-        ctx.strokeRect(0, 0, widthField, heightField);
-        drawMatrix(ctx, state.getField());
+        drawMatrix(ctx, state.getField(), BACKGROUND_COLOR);
 
         ctx.setFillStyle("grey");
         if (state.getState() == Tetris.State.PAUSE) {
@@ -121,22 +118,27 @@ public class TView extends Div {
         if (state.getState() == Tetris.State.OVER) {
             ctx.fillText("game over", cellSizePx * 2, cellSizePx * 10);
         }
-        ctx.setFillStyle("black");
     }
 
-    private void drawMatrix(CanvasRenderingContext2D ctx, int[][] field) {
+    private void drawMatrix(CanvasRenderingContext2D ctx, int[][] field, String backgroundColor) {
         for (int i = 0; i < field.length; i++) {
             int[] row = field[i];
             for (int j = 0; j < row.length; j++) {
-                if (field[i][j] > 0) {
-                    drawCell(ctx, i, j);
-                }
+                drawCell(ctx, i, j, field[i][j] > 0 ? color : backgroundColor);
             }
         }
     }
 
-    private void drawCell(CanvasRenderingContext2D ctx, int i, int j) {
-        ctx.setFillStyle(color);
+    private void drawEmptyMatrix(CanvasRenderingContext2D ctx) {
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 10; j++) {
+                drawCell(ctx, i, j, BACKGROUND_COLOR);
+            }
+        }
+    }
+
+    private void drawCell(CanvasRenderingContext2D ctx, int i, int j, String fillStyle) {
+        ctx.setFillStyle(fillStyle);
         ctx.fillRect(j * cellSizePx + 1, i * cellSizePx + 1, cellSizePx - 2, cellSizePx - 2);
     }
 
