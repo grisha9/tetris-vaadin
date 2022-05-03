@@ -106,6 +106,7 @@ public class SinglePlayerView extends AppLayout implements HasUrlParameter<Strin
             game = gameHolder.getGame(sessionId);
             game.addObserver(multiPlayerContentView::renderTetrisView);
             game.start();
+            gameHolder.setStarted(true);
         }
     }
 

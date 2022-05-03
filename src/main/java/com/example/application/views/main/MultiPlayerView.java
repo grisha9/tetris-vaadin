@@ -68,7 +68,9 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
         logo.setId("logo");
         header.add(textField);
         header.add(logo);
-        header.add(new H1("Tetris multi player"));
+        H1 h1 = new H1("Tetris multi player");
+        h1.addClickListener(e -> UI.getCurrent().navigate("/"));
+        header.add(h1);
         return header;
     }
 

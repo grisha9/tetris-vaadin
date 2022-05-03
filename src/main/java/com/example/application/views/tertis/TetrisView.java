@@ -24,9 +24,11 @@ public class TetrisView extends Div {
     private final Label score;
     private final Label labelLevel;
     private final String color;
+    private final int widthField;
+    private final int heightField;
+    private boolean paused = false;
 
     public TetrisView(int cellSizePx, String name, String color) {
-        //addClassName("t-view");
         this.color = color;
         setId(UUID.randomUUID().toString());
         getStyle().set("border", (cellSizePx / 4) + "px solid");
@@ -35,8 +37,8 @@ public class TetrisView extends Div {
         setWidth(15 * cellSizePx, Unit.PIXELS);
 
         this.cellSizePx = cellSizePx;
-        int widthField = 10 * cellSizePx;
-        int heightField = 20 * cellSizePx;
+        this.widthField = 10 * cellSizePx;
+        this.heightField = 20 * cellSizePx;
         this.canvasField = new Canvas(widthField, heightField);
         this.widthNext = 4 * cellSizePx;
         this.heightNext = 4 * cellSizePx;
@@ -109,12 +111,19 @@ public class TetrisView extends Div {
     }
 
     private void drawField(TetrisState state, CanvasRenderingContext2D ctx) {
+        if (paused) {
+            ctx.clearRect(0, 0, widthField, heightField);
+            ctx.strokeRect(0, 0, widthField, heightField);
+            paused = state.getState() == Tetris.State.PAUSE;
+        }
         drawMatrix(ctx, state.getField(), BACKGROUND_COLOR);
 
         ctx.setFillStyle("grey");
         if (state.getState() == Tetris.State.PAUSE) {
             ctx.fillText("pause", cellSizePx * 3, cellSizePx * 10);
+            paused = true;
         }
+
         if (state.getState() == Tetris.State.OVER) {
             ctx.fillText("game over", cellSizePx * 2, cellSizePx * 10);
         }

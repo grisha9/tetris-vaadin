@@ -4,6 +4,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -29,11 +30,14 @@ public class GameHolderService {
 
     @Scheduled(fixedDelay = 100_000)
     public void removeOldGames() {
-        gameById.values().stream()
+        List<GameHolder> collect = gameById.values().stream()
                 .filter(this::isReadyForRemoval)
-                .map(GameHolder::getId)
-                .collect(Collectors.toList())
-                .forEach(gameById::remove);
+                .collect(Collectors.toList());
+        for (GameHolder gameHolder : collect) {
+            gameHolder.getPlayers().forEach(Tetris::stop);
+            gameById.remove(gameHolder.getId());
+        }
+
     }
 
     private boolean isReadyForRemoval(GameHolder gameHolder) {
