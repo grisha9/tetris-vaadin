@@ -8,6 +8,7 @@ import ru.rzn.gmyasoedov.tetris.core.TetrisSettings;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -53,11 +54,18 @@ public class GameHolder {
         }
         FigureGenerator generator = new FigureGenerator(figureGeneratorSeed);
         TetrisSettings tetrisSettings = new TetrisSettings().setScoreLevelDelta(25);
-        Tetris tetris = gameBySessionId
-                .putIfAbsent(requireNonNull(sessionId), new Tetris(generator, requireNonNull(name), tetrisSettings));
+        Tetris tetris = gameBySessionId.get(requireNonNull(sessionId));
         if (tetris != null) {
             throw new IllegalStateException("player already exist");
         }
+        var playerNameAlreadyExist = gameBySessionId.values()
+                .stream()
+                .anyMatch(game -> Objects.equals(game.getId(), name));
+        if (playerNameAlreadyExist) {
+            throw new IllegalStateException(name + " player name already exist");
+        }
+
+        gameBySessionId.put(sessionId, new Tetris(generator, requireNonNull(name), tetrisSettings));
         if (color != null) {
             colorByTetrisId.put(name, color);
         }

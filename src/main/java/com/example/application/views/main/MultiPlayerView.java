@@ -100,6 +100,16 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
                 lastFocusTextFieldUpdate = currentTimeMillis;
             }
         }, Key.ARROW_DOWN);
+        if (gameHolder.isStarted()) {
+            //todo rework binding observer
+            /*Collection<Tetris> players = gameHolder.getPlayers();
+            for (Tetris tetris : players) {
+                for (MultiPlayerContentView view : views) {
+                    tetris.addObserver(view::renderTetrisView);
+                }
+            }
+            return;*/
+        }
         getUI().ifPresent(ui -> ui.access(() -> {
             String sessionId = ui.getSession().getSession().getId();
             if (gameHolder.getOwnerSessionId().equals(sessionId)) {

@@ -30,20 +30,6 @@ public class MainView extends AppLayout {
 
         HorizontalLayout header = createHeader();
         addToNavbar(createTopBar(header));
-
-        /*addKeyDownListener(Key.ARROW_DOWN, e -> Notification.show("dd111"));
-        addKeyUpListener(Key.ARROW_DOWN, e -> Notification.show("uuu111"));
-        addKeyPressListener(Key.KEY_A, e ->  Notification.show("2222"));*/
-        addListener(KeyDownEvent.class, e -> Notification.show("22-dd"));
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        addListener(KeyDownEvent.class, e -> Notification.show("22-dd"));
-        /*addKeyDownListener(Key.ARROW_DOWN, e -> Notification.show("dd111"));
-        addKeyUpListener(Key.ARROW_DOWN, e -> Notification.show("uuu111"));
-        addKeyPressListener(Key.KEY_A, e ->  Notification.show("2222"));*/
     }
 
     private VerticalLayout createTopBar(HorizontalLayout header) {

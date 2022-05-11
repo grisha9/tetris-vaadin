@@ -2,10 +2,7 @@ package com.example.application.views.main;
 
 import com.example.application.service.GameHolder;
 import com.example.application.service.GameHolderService;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.Unit;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
@@ -88,6 +85,15 @@ public class SinglePlayerView extends AppLayout implements HasUrlParameter<Strin
     }
 
     @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        String sessionId = VaadinSession.getCurrent().getSession().getId();
+        var game = gameHolder.getGame(sessionId);
+        if (game != null) {
+            game.removeObserver(multiPlayerContentView::renderTetrisView);
+        }
+    }
+
+    @Override
     public void setParameter(BeforeEvent beforeEvent, String id) {
         GameHolder gameHolder = gameHolderService.getById(id);
         if (gameHolder == null) {
@@ -98,6 +104,7 @@ public class SinglePlayerView extends AppLayout implements HasUrlParameter<Strin
         Tetris game = gameHolder.getGame(sessionId);
         if (game != null) {
             gameHolder.addView(sessionId, multiPlayerContentView);
+            game.addObserver(multiPlayerContentView::renderTetrisView);
             multiPlayerContentView.addKeyListiners();
         } else {
             gameHolder.addPlayer(sessionId, "", "black");
