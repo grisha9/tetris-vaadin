@@ -39,8 +39,9 @@ public class MainView extends AppLayout {
         layout.setSpacing(false);
         layout.setPadding(false);
         layout.setAlignItems(FlexComponent.Alignment.CENTER);
-        Button singleGame = new Button("single game", e -> setContent(new Label("sg")));
-        Button multiplayerGame = new Button("multiplayer game", e -> setContent(new Label("mg")));
+        Button singleGame = new Button("single game");
+        Button multiplayerGame = new Button("multiplayer game");
+        Button singleMobileGame = new Button("single mobile game");
         singleGame.addClickListener(e -> {
             String id = UUID.randomUUID().toString();
             gameHolderService.createGame(id, UI.getCurrent().getSession().getSession().getId());
@@ -51,7 +52,12 @@ public class MainView extends AppLayout {
             gameHolderService.createGame(id, UI.getCurrent().getSession().getSession().getId());
             UI.getCurrent().navigate("multiplayer/" + id);
         });
-        layout.add(header, new HorizontalLayout(singleGame, multiplayerGame));
+        singleMobileGame.addClickListener(e -> {
+            String id = UUID.randomUUID().toString();
+            gameHolderService.createGame(id, UI.getCurrent().getSession().getSession().getId());
+            UI.getCurrent().navigate("mobile/singleplayer/" + id);
+        });
+        layout.add(header, new HorizontalLayout(singleGame, multiplayerGame, singleMobileGame));
         return layout;
     }
 

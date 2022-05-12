@@ -1,6 +1,6 @@
 package com.example.application.service;
 
-import com.example.application.views.main.MultiPlayerContentView;
+import com.example.application.views.main.GameContentView;
 import org.apache.commons.lang3.RandomUtils;
 import ru.rzn.gmyasoedov.tetris.core.FigureGenerator;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
@@ -24,7 +24,7 @@ public class GameHolder {
 
     private final Map<String, Tetris> gameBySessionId = new ConcurrentHashMap<>();
     private final Map<String, String> colorByTetrisId = new ConcurrentHashMap<>();
-    private final Map<String, MultiPlayerContentView> viewBySessionId = new ConcurrentHashMap<>();
+    private final Map<String, GameContentView> viewBySessionId = new ConcurrentHashMap<>();
     private final Collection<Tetris> gameList = new ArrayBlockingQueue<>(MAX_PLAYER_LIMIT);
 
     private boolean started = false;
@@ -72,11 +72,11 @@ public class GameHolder {
         gameList.add(gameBySessionId.get(sessionId));
     }
 
-    public void addView(String sessionId, MultiPlayerContentView consumer) {
+    public void addView(String sessionId, GameContentView consumer) {
         viewBySessionId.put(sessionId, consumer);
     }
 
-    public Collection<MultiPlayerContentView> getViews() {
+    public Collection<GameContentView> getViews() {
         return viewBySessionId.values();
     }
 

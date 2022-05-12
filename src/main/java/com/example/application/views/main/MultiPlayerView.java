@@ -2,6 +2,7 @@ package com.example.application.views.main;
 
 import com.example.application.service.GameHolder;
 import com.example.application.service.GameHolderService;
+import com.example.application.service.Utils;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.Key;
@@ -33,22 +34,21 @@ import java.util.List;
 public class MultiPlayerView extends AppLayout implements HasUrlParameter<String> {
 
     private final GameHolderService gameHolderService;
-    private final MultiPlayerContentView multiPlayerContentView;
+    private final GameContentView gameContentView;
     private GameHolder gameHolder;
     private Button startGame;
     private TextField textField;
     private long lastFocusTextFieldUpdate = 0;
 
     public MultiPlayerView(GameHolderService gameHolderService,
-                           MultiPlayerContentView multiPlayerContentView) {
+                           GameContentView gameContentView) {
         this.gameHolderService = gameHolderService;
-        this.multiPlayerContentView = multiPlayerContentView;
+        this.gameContentView = gameContentView;
 
         HorizontalLayout header = createHeader();
         addToNavbar(createTopBar(header));
-        setContent(multiPlayerContentView);
-        multiPlayerContentView.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Put content in the middle horizontally.
-        multiPlayerContentView.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER); // Put content in the middle vertically.
+        setContent(gameContentView);
+        Utils.applyCenterComponentAlignment(gameContentView);
     }
 
     private HorizontalLayout createHeader() {
@@ -90,9 +90,9 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        multiPlayerContentView.renderView(gameHolder);
-        textField.addKeyDownListener(Key.ARROW_DOWN, e -> multiPlayerContentView.fastSpeed());
-        textField.addKeyUpListener(Key.ARROW_DOWN, e -> multiPlayerContentView.normalSpeed());
+        gameContentView.renderView(gameHolder);
+        textField.addKeyDownListener(Key.ARROW_DOWN, e -> gameContentView.fastSpeed());
+        textField.addKeyUpListener(Key.ARROW_DOWN, e -> gameContentView.normalSpeed());
         UI.getCurrent().addShortcutListener(e -> {
             long currentTimeMillis = System.currentTimeMillis();
             if (lastFocusTextFieldUpdate == 0 || Math.abs(currentTimeMillis - lastFocusTextFieldUpdate) > 3000) {
@@ -116,10 +116,10 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
                 startGame.setVisible(true);
                 startGame.addClickListener(e -> {
                     gameHolder.setStarted(true);
-                    Collection<MultiPlayerContentView> views = gameHolder.getViews();
+                    Collection<GameContentView> views = gameHolder.getViews();
                     Collection<Tetris> players = gameHolder.getPlayers();
                     for (Tetris tetris : players) {
-                        for (MultiPlayerContentView view : views) {
+                        for (GameContentView view : views) {
                             tetris.addObserver(view::renderTetrisView);
                         }
                     }
@@ -141,14 +141,13 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
         String sessionId = VaadinSession.getCurrent().getSession().getId();
         Tetris game = gameHolder.getGame(sessionId);
         if (game != null) {
-            gameHolder.addView(sessionId, multiPlayerContentView);
-            multiPlayerContentView.addKeyListiners();
+            gameHolder.addView(sessionId, gameContentView);
+            gameContentView.addKeyListeners();
         } else {
             if (gameHolder.isStarted()) {
                 throw new IllegalStateException("game is already started");
             }
-            List<String> colors = List
-                    .of("BLACK", "RED", "ORANGE", "BLUE", "GREEN", "MAGENTA", "PINK");
+            List<String> colors = List.of("BLACK", "RED", "ORANGE", "BLUE", "GREEN", "MAGENTA", "PINK");
             Select<String> select = new Select<>();
             select.setLabel("Color");
             select.setItems(colors);
@@ -194,8 +193,8 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
 
     private void addPlayer(GameHolder gameHolder, String sessionId, String name, String color) {
         gameHolder.addPlayer(sessionId, name, color);
-        gameHolder.addView(sessionId, multiPlayerContentView);
-        multiPlayerContentView.addKeyListiners();
+        gameHolder.addView(sessionId, gameContentView);
+        gameContentView.addKeyListeners();
         gameHolder.newPlayerBroadcastAll(gameHolder);//render view
     }
 }

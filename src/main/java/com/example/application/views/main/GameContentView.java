@@ -7,7 +7,6 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -22,17 +21,18 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.application.service.GameHolder.MAX_PLAYER_LIMIT;
-import static com.example.application.service.Utils.CELL_SIZE_PIXELS;
+
 
 @SpringComponent
 @UIScope
-public class MultiPlayerContentView extends VerticalLayout implements KeyNotifier, DetachNotifier {
+public class GameContentView extends VerticalLayout implements KeyNotifier, DetachNotifier {
 
     private volatile Map<String, TetrisView> tetrisViewByPlayer = Collections.emptyMap();
     private Tetris tetris;
     private VerticalLayout softButtonLayout;
+    private int cellSizePixels = Utils.CELL_SIZE_PIXELS;
 
-    public void addKeyListiners() {
+    public void addKeyListeners() {
         UI.getCurrent().addShortcutListener(e -> {
             if (tetris != null) tetris.toLeft();
         }, Key.ARROW_LEFT);
@@ -63,6 +63,15 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
     }
 
     public void renderView(GameHolder gameHolder) {
+        renderView(gameHolder, false);
+    }
+
+    public void renderView(GameHolder gameHolder, boolean showSoftButton) {
+        //todo auto sacale
+        /*UI.getCurrent().getPage().retrieveExtendedClientDetails(receiver -> {
+            int screenWidth = receiver.getScreenWidth();
+            // do something with screen width
+        });*/
         getUI().ifPresent(ui -> ui.access(() -> {
             String sessionId = ui.getSession().getSession().getId();
             removeAll();
@@ -77,35 +86,43 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
             Map<String, TetrisView> viewMap = new HashMap<>();
             List<TetrisView> tetrisViews = new ArrayList<>(gameHolder.getPlayers().size());
             gameHolder.getPlayers().forEach(tetris -> {
-                TetrisView tetrisView = new TetrisView(CELL_SIZE_PIXELS, tetris.getId(),
+                TetrisView tetrisView = new TetrisView(cellSizePixels, tetris.getId(),
                         gameHolder.getGameColor(tetris.getId()));
                 tetrisViews.add(tetrisView);
                 viewMap.put(tetris.getId(), tetrisView);
             });
             tetrisViewByPlayer = viewMap;
             add(getLayout(tetrisViews));
+            if (showSoftButton) softButtonLayout.setVisible(true);
         }));
+    }
+
+    public void minusScale() {
+        if ((cellSizePixels - 3) > 0) {
+            cellSizePixels -= 3;
+        }
+    }
+
+    public void plusScale() {
+        cellSizePixels += 3;
     }
 
     private Component getLayout(List<TetrisView> tetrisViews) {
         VerticalLayout verticalLayout = getTetrisGameLayout(tetrisViews);
-        addSoftButtons(verticalLayout);
-
-        verticalLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        verticalLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
-
+        addSoftButtons(verticalLayout, getLineSize(tetrisViews.size()));
+        Utils.applyCenterComponentAlignment(verticalLayout);
         return new HorizontalLayout(verticalLayout);
     }
 
-    private void addSoftButtons(VerticalLayout verticalLayout) {
+    private void addSoftButtons(VerticalLayout verticalLayout, int lineSize) {
         Button buttonLeft = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_LEFT));
         Button buttonRight = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_RIGHT));
         Button buttonDown = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_DOWN));
         Button buttonRotate = new Button(new Icon(VaadinIcon.REFRESH));
-        setButtonSize(buttonLeft);
-        setButtonSize(buttonRight);
-        setButtonSize(buttonDown);
-        setButtonSize(buttonRotate);
+        setButtonSize(buttonLeft, lineSize);
+        setButtonSize(buttonRight, lineSize);
+        setButtonSize(buttonDown, lineSize);
+        setButtonSize(buttonRotate, lineSize);
         buttonLeft.addClickListener(event -> {
             if (tetris != null) tetris.toLeft();
         });
@@ -122,14 +139,13 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
         HorizontalLayout secondRowButton = new HorizontalLayout(buttonDown, buttonRotate);
         softButtonLayout = new VerticalLayout(firstRowButton, secondRowButton);
         softButtonLayout.setVisible(Utils.isMobileDevice());
-        softButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        softButtonLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
+        Utils.applyCenterComponentAlignment(softButtonLayout);
         verticalLayout.add(softButtonLayout);
     }
 
-    private void setButtonSize(Button button) {
-        button.setWidth(7 * CELL_SIZE_PIXELS, Unit.PIXELS);
-        button.setHeight(2 * CELL_SIZE_PIXELS, Unit.PIXELS);
+    private void setButtonSize(Button button, int lineSize) {
+        button.setWidth(7 * cellSizePixels * lineSize, Unit.PIXELS);
+        button.setHeight(2 * cellSizePixels, Unit.PIXELS);
     }
 
     void renderTetrisView(TetrisState state) {
@@ -149,7 +165,7 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
         HorizontalLayout layout1 = new HorizontalLayout();
         HorizontalLayout layout2 = new HorizontalLayout();
         VerticalLayout verticalLayout = new VerticalLayout(layout1, layout2);
-        int lineSize = (int) Math.ceil(tetrisViews.size() / 2.0);
+        int lineSize = getLineSize(tetrisViews.size());
         for (int i = 0; i < tetrisViews.size(); i++) {
             if (i < lineSize) {
                 layout1.add(tetrisViews.get(i));
@@ -158,6 +174,10 @@ public class MultiPlayerContentView extends VerticalLayout implements KeyNotifie
             }
         }
         return verticalLayout;
+    }
+
+    private int getLineSize(int tetrisCount) {
+        return (int) Math.ceil(tetrisCount / 2.0);
     }
 
     void fastSpeed() {
