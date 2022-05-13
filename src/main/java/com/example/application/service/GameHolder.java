@@ -104,4 +104,10 @@ public class GameHolder {
         if (this.started) return;
         this.started = started;
     }
+
+    public boolean playerAlreadyExist(String playerName) {
+        return gameBySessionId.values()
+                .stream()
+                .anyMatch(game -> Objects.equals(game.getId(), playerName));
+    }
 }

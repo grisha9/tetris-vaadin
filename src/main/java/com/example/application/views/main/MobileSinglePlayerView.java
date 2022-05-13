@@ -7,6 +7,7 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -32,9 +33,9 @@ public class MobileSinglePlayerView extends AppLayout implements HasUrlParameter
                                   GameContentView gameContentView) {
         this.gameHolderService = gameHolderService;
         this.gameContentView = gameContentView;
+        this.gameContentView.setMobile(true);
 
-        HorizontalLayout header = createHeader();
-        addToNavbar(createTopBar(header));
+        addToNavbar(createHeader());
         setContent(gameContentView);
         Utils.applyCenterComponentAlignment(gameContentView);
     }
@@ -42,26 +43,11 @@ public class MobileSinglePlayerView extends AppLayout implements HasUrlParameter
     private HorizontalLayout createHeader() {
         HorizontalLayout header = new HorizontalLayout();
         header.getThemeList().add("dark");
-        header.setPadding(false);
-        header.setSpacing(false);
+        header.setPadding(true);
+        header.setSpacing(true);
         header.setWidthFull();
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.setId("header");
-
-        Image logo = new Image("images/logo.png", "Tetris logo");
-        logo.setId("logo");
-        header.add(logo);
-        header.add(new H1("Tetris single player"));
-        return header;
-    }
-
-    private VerticalLayout createTopBar(HorizontalLayout header) {
-        VerticalLayout layout = new VerticalLayout();
-        layout.getThemeList().add("dark");
-        layout.setWidthFull();
-        layout.setSpacing(false);
-        layout.setPadding(false);
-        layout.setAlignItems(FlexComponent.Alignment.CENTER);
 
         Button plusScaleButton = new Button(new Icon(VaadinIcon.PLUS_CIRCLE), e -> {
             gameContentView.plusScale();
@@ -71,9 +57,10 @@ public class MobileSinglePlayerView extends AppLayout implements HasUrlParameter
             gameContentView.minusScale();
             gameContentView.renderView(gameHolder, true);
         });
-        startGameButton = new Button("start game");
-        layout.add(header, new HorizontalLayout(startGameButton, minusScaleButton, plusScaleButton));
-        return layout;
+        startGameButton = new Button("start single game");
+
+        header.add(startGameButton, minusScaleButton, plusScaleButton);
+        return header;
     }
 
     @Override

@@ -31,6 +31,7 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
     private Tetris tetris;
     private VerticalLayout softButtonLayout;
     private int cellSizePixels = Utils.CELL_SIZE_PIXELS;
+    private boolean mobile;
 
     public void addKeyListeners() {
         UI.getCurrent().addShortcutListener(e -> {
@@ -63,7 +64,7 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
     }
 
     public void renderView(GameHolder gameHolder) {
-        renderView(gameHolder, false);
+        renderView(gameHolder, mobile);
     }
 
     public void renderView(GameHolder gameHolder, boolean showSoftButton) {
@@ -98,31 +99,40 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
     }
 
     public void minusScale() {
-        if ((cellSizePixels - 3) > 0) {
-            cellSizePixels -= 3;
+        if ((cellSizePixels - 2) > 0) {
+            cellSizePixels -= 2;
         }
     }
 
     public void plusScale() {
-        cellSizePixels += 3;
+        cellSizePixels += 2;
+    }
+
+    public boolean isMobile() {
+        return mobile;
+    }
+
+    public void setMobile(boolean mobile) {
+        this.mobile = mobile;
     }
 
     private Component getLayout(List<TetrisView> tetrisViews) {
         VerticalLayout verticalLayout = getTetrisGameLayout(tetrisViews);
-        addSoftButtons(verticalLayout, getLineSize(tetrisViews.size()));
+        addSoftButtons(verticalLayout, tetrisViews.size());
         Utils.applyCenterComponentAlignment(verticalLayout);
         return new HorizontalLayout(verticalLayout);
     }
 
-    private void addSoftButtons(VerticalLayout verticalLayout, int lineSize) {
+    private void addSoftButtons(VerticalLayout verticalLayout, int tetrisCount) {
         Button buttonLeft = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_LEFT));
         Button buttonRight = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_RIGHT));
         Button buttonDown = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_DOWN));
         Button buttonRotate = new Button(new Icon(VaadinIcon.REFRESH));
-        setButtonSize(buttonLeft, lineSize);
-        setButtonSize(buttonRight, lineSize);
-        setButtonSize(buttonDown, lineSize);
-        setButtonSize(buttonRotate, lineSize);
+        int lineTetrisCount = tetrisCount < (MAX_PLAYER_LIMIT / 2) ? tetrisCount : getLineSize(tetrisCount);
+        setButtonSize(buttonLeft, lineTetrisCount);
+        setButtonSize(buttonRight, lineTetrisCount);
+        setButtonSize(buttonDown, lineTetrisCount);
+        setButtonSize(buttonRotate, lineTetrisCount);
         buttonLeft.addClickListener(event -> {
             if (tetris != null) tetris.toLeft();
         });
@@ -138,7 +148,7 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
         HorizontalLayout firstRowButton = new HorizontalLayout(buttonLeft, buttonRight);
         HorizontalLayout secondRowButton = new HorizontalLayout(buttonDown, buttonRotate);
         softButtonLayout = new VerticalLayout(firstRowButton, secondRowButton);
-        softButtonLayout.setVisible(Utils.isMobileDevice());
+        softButtonLayout.setVisible(mobile);
         Utils.applyCenterComponentAlignment(softButtonLayout);
         verticalLayout.add(softButtonLayout);
     }
