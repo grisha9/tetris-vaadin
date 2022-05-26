@@ -14,6 +14,8 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
@@ -27,6 +29,7 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
+import ru.rzn.gmyasoedov.tetris.core.TetrisSettings;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,8 +39,9 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
 
     private final GameHolderService gameHolderService;
     private final GameContentView gameContentView;
+    private final Button settingsButton = new Button(new Icon(VaadinIcon.COG));
+    private final Button startGameButton = new Button("start game");
     private GameHolder gameHolder;
-    private Button startGameButton;
     private TextField textField;
     private long lastFocusTextFieldUpdate = 0;
 
@@ -53,6 +57,7 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
     }
 
     private HorizontalLayout createHeader() {
+        System.out.println("mpv!!!");
         HorizontalLayout header = new HorizontalLayout();
         header.getThemeList().add("dark");
         header.setPadding(false);
@@ -82,9 +87,9 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
         layout.setSpacing(false);
         layout.setPadding(false);
         layout.setAlignItems(FlexComponent.Alignment.CENTER);
-        startGameButton = new Button("start game");
         startGameButton.setVisible(false);
-        layout.add(header, new HorizontalLayout(startGameButton));
+        settingsButton.setVisible(false);
+        layout.add(header, new HorizontalLayout(startGameButton, settingsButton));
         return layout;
     }
 
@@ -115,6 +120,7 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
             String sessionId = ui.getSession().getSession().getId();
             if (gameHolder.getOwnerSessionId().equals(sessionId)) {
                 startGameButton.setVisible(true);
+                settingsButton.setVisible(true);
                 startGameButton.addClickListener(e -> {
                     gameHolder.setStarted(true);
                     Collection<GameContentView> views = gameHolder.getViews();
@@ -126,7 +132,16 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
                     }
                     players.forEach(Tetris::start);
                     startGameButton.setVisible(false);
+                    settingsButton.setVisible(false);
                     textField.focus();
+                });
+
+                settingsButton.addClickListener(e -> {
+                    Dialog dialog = new Dialog(new SettingsView(gameHolder.getSettings()));
+                    Button ok = new Button("Ok", e1 -> dialog.close());
+                    ok.addClickShortcut(Key.ENTER);
+                    dialog.add(new HorizontalLayout(ok, new Button("Cancel", e2 -> dialog.close())));
+                    dialog.open();
                 });
             }
         }));
@@ -171,7 +186,8 @@ public class MultiPlayerView extends AppLayout implements HasUrlParameter<String
             TextField textField = new TextField();
             textField.setLabel("Name");
             textField.setMaxLength(9);
-            textField.setMinLength(3);
+            textField.setMinLength(2);
+            textField.setErrorMessage("min: " + textField.getMinLength() + " - max: " + textField.getMaxLength());
             textField.setAutofocus(true);
             VerticalLayout verticalLayout = new VerticalLayout(textField, select);
             Dialog dialog = new Dialog();

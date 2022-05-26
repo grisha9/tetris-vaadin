@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.jetbrains.annotations.NotNull;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 import ru.rzn.gmyasoedov.tetris.core.TetrisState;
 
@@ -32,6 +33,7 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
     private VerticalLayout softButtonLayout;
     private int cellSizePixels = Utils.CELL_SIZE_PIXELS;
     private boolean mobile;
+    private GameHolder holder;
 
     public void addKeyListeners() {
         UI.getCurrent().addShortcutListener(e -> {
@@ -79,6 +81,7 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
             if (gameHolder == null) {
                 return;
             }
+            this.holder = gameHolder;
             tetris = gameHolder.getGame(sessionId);
             if (tetris == null) {
                 throw new IllegalStateException("no game " + sessionId);
@@ -158,7 +161,8 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
         button.setHeight(2 * cellSizePixels, Unit.PIXELS);
     }
 
-    void renderTetrisView(TetrisState state) {
+    void renderTetrisView(@NotNull TetrisState state) {
+        holder.updateCommonMaxLevel(state.getLevel());
         TetrisView tetrisView = tetrisViewByPlayer.get(state.getGameId());
         if (tetrisView != null) {
             tetrisView.observer(state);

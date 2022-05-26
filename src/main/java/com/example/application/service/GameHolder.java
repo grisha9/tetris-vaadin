@@ -26,14 +26,17 @@ public class GameHolder {
     private final Map<String, String> colorByTetrisId = new ConcurrentHashMap<>();
     private final Map<String, GameContentView> viewBySessionId = new ConcurrentHashMap<>();
     private final Collection<Tetris> gameList = new ArrayBlockingQueue<>(MAX_PLAYER_LIMIT);
+    private final TetrisSettings settings;
 
     private boolean started = false;
+    private int maxLevel = 1;
 
     public GameHolder(String id, String ownerSessionId) {
         this.id = requireNonNull(id);
         this.ownerSessionId = requireNonNull(ownerSessionId);
         this.figureGeneratorSeed = RandomUtils.nextLong();
         this.creationTimeMillis = System.currentTimeMillis();
+        this.settings = new TetrisSettings().setScoreLevelDelta(25);
     }
 
     public String getId() {
@@ -53,7 +56,7 @@ public class GameHolder {
             throw new IllegalStateException("max player limit " + MAX_PLAYER_LIMIT);
         }
         FigureGenerator generator = new FigureGenerator(figureGeneratorSeed);
-        TetrisSettings tetrisSettings = new TetrisSettings().setScoreLevelDelta(25);
+
         Tetris tetris = gameBySessionId.get(requireNonNull(sessionId));
         if (tetris != null) {
             throw new IllegalStateException("player already exist");
@@ -65,7 +68,7 @@ public class GameHolder {
             throw new IllegalStateException(name + " player name already exist");
         }
 
-        gameBySessionId.put(sessionId, new Tetris(generator, requireNonNull(name), tetrisSettings));
+        gameBySessionId.put(sessionId, new Tetris(generator, requireNonNull(name), settings));
         if (color != null) {
             colorByTetrisId.put(name, color);
         }
@@ -109,5 +112,19 @@ public class GameHolder {
         return gameBySessionId.values()
                 .stream()
                 .anyMatch(game -> Objects.equals(game.getId(), playerName));
+    }
+
+    public TetrisSettings getSettings() {
+        return settings;
+    }
+
+    public void updateCommonMaxLevel(int level) {
+        if (!settings.isCommonMaxSpeed()) return;
+        synchronized (this) {
+            if (level > maxLevel) {
+                maxLevel = level;
+                gameList.forEach(tetris -> tetris.setLevel(level));
+            }
+        }
     }
 }

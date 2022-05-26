@@ -23,7 +23,7 @@ public class MainMobileView extends AppLayout {
         this.gameHolderService = gameHolderService;
 
         HorizontalLayout header = createHeader();
-        addToNavbar(true, createTopBar(header));
+        addToNavbar(createTopBar(header));
     }
 
     private VerticalLayout createTopBar(HorizontalLayout header) {
