@@ -92,7 +92,11 @@ public class TetrisView extends Div {
 
 
     public void observer(TetrisState state) {
-        getUI().ifPresent(ui -> ui.access(() -> renderView(state)));
+        if (state.getState() == Tetris.State.OVER) {
+            getUI().ifPresent(ui -> ui.accessSynchronously(() -> renderView(state)));
+        } else {
+            getUI().ifPresent(ui -> ui.access(() -> renderView(state)));
+        }
     }
 
     private void renderView(TetrisState state) {
