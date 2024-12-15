@@ -15,11 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
 import ru.rzn.gmyasoedov.tetris.core.TetrisState;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.example.application.service.GameHolder.MAX_PLAYER_LIMIT;
 
@@ -127,7 +123,9 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
     }
 
     private void addSoftButtons(VerticalLayout verticalLayout, int tetrisCount) {
-        Button buttonLeft = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_LEFT));
+        Icon icon = new Icon(VaadinIcon.CHEVRON_CIRCLE_LEFT);
+        //icon.setSize("100px"); test size
+        Button buttonLeft = new Button(icon);
         Button buttonRight = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_RIGHT));
         Button buttonDown = new Button(new Icon(VaadinIcon.CHEVRON_CIRCLE_DOWN));
         Button buttonRotate = new Button(new Icon(VaadinIcon.REFRESH));

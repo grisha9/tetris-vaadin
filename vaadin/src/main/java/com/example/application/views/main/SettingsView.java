@@ -2,12 +2,9 @@ package com.example.application.views.main;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
-import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
 import ru.rzn.gmyasoedov.tetris.core.TetrisSettings;
 
 public class SettingsView extends VerticalLayout {
