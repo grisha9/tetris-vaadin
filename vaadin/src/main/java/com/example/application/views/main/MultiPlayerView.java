@@ -29,57 +29,93 @@ import ru.rzn.gmyasoedov.tetris.core.Tetris;
 import java.util.Collection;
 import java.util.List;
 
-@Route("mobile/multiplayer")
-public class MobileMultiPlayerView extends AppLayout implements HasUrlParameter<String> {
+@Route("multiplayer")
+public class MultiPlayerView extends AppLayout implements HasUrlParameter<String> {
 
     private final GameHolderService gameHolderService;
     private final GameContentView gameContentView;
+    private final Button settingsButton = new Button(new Icon(VaadinIcon.COG));
+    private final Button startGameButton = new Button("start game");
     private GameHolder gameHolder;
-    private Button startGameButton;
+    private TextField textField;
+    private long lastFocusTextFieldUpdate = 0;
 
-    public MobileMultiPlayerView(GameHolderService gameHolderService,
-                                 GameContentView gameContentView) {
+    public MultiPlayerView(GameHolderService gameHolderService,
+                           GameContentView gameContentView) {
         this.gameHolderService = gameHolderService;
         this.gameContentView = gameContentView;
-        this.gameContentView.setMobile(true);
 
-        addToNavbar(createHeader());
+        HorizontalLayout header = createHeader();
+        addToNavbar(createTopBar(header));
         setContent(gameContentView);
         Utils.applyCenterComponentAlignment(gameContentView);
     }
 
     private HorizontalLayout createHeader() {
+        System.out.println("mpv!!!");
         HorizontalLayout header = new HorizontalLayout();
         header.getThemeList().add("dark");
-        header.setPadding(true);
-        header.setSpacing(true);
+        header.setPadding(false);
+        header.setSpacing(false);
         header.setWidthFull();
         header.setAlignItems(FlexComponent.Alignment.CENTER);
         header.setId("header");
 
-        Button plusScaleButton = new Button(new Icon(VaadinIcon.PLUS_CIRCLE), e -> {
-            gameContentView.plusScale();
-            gameContentView.renderView(gameHolder, true);
-        });
-        Button minusScaleButton = new Button(new Icon(VaadinIcon.MINUS_CIRCLE), e -> {
-            gameContentView.minusScale();
-            gameContentView.renderView(gameHolder, true);
-        });
-        startGameButton = new Button("start multiplayer game");
-        startGameButton.setVisible(false);
-        header.add(startGameButton, minusScaleButton, plusScaleButton);
+        textField = new TextField();
+        textField.setAutofocus(true);
+        textField.setWidth(1, Unit.MM);
+
+        Image logo = new Image("images/logo.png", "Tetris logo");
+        logo.setId("logo");
+        header.add(textField);
+        header.add(logo);
+        H1 h1 = new H1("Tetris multi player");
+        h1.addClickListener(e -> UI.getCurrent().navigate("/"));
+        header.add(h1);
         return header;
+    }
+
+    private VerticalLayout createTopBar(HorizontalLayout header) {
+        VerticalLayout layout = new VerticalLayout();
+        layout.getThemeList().add("dark");
+        layout.setWidthFull();
+        layout.setSpacing(false);
+        layout.setPadding(false);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+        startGameButton.setVisible(false);
+        settingsButton.setVisible(false);
+        layout.add(header, new HorizontalLayout(startGameButton, settingsButton));
+        return layout;
     }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        gameContentView.renderView(gameHolder, true);
-
+        gameContentView.renderView(gameHolder);
+        textField.addKeyDownListener(Key.ARROW_DOWN, e -> gameContentView.fastSpeed());
+        textField.addKeyUpListener(Key.ARROW_DOWN, e -> gameContentView.normalSpeed());
+        UI.getCurrent().addShortcutListener(e -> {
+            long currentTimeMillis = System.currentTimeMillis();
+            if (lastFocusTextFieldUpdate == 0 || Math.abs(currentTimeMillis - lastFocusTextFieldUpdate) > 3000) {
+                textField.focus();
+                lastFocusTextFieldUpdate = currentTimeMillis;
+            }
+        }, Key.ARROW_DOWN);
+        if (gameHolder.isStarted()) {
+            //todo rework binding observer
+            /*Collection<Tetris> players = gameHolder.getPlayers();
+            for (Tetris tetris : players) {
+                for (MultiPlayerContentView view : views) {
+                    tetris.addObserver(view::renderTetrisView);
+                }
+            }
+            return;*/
+        }
         getUI().ifPresent(ui -> ui.access(() -> {
             String sessionId = ui.getSession().getSession().getId();
             if (gameHolder.getOwnerSessionId().equals(sessionId)) {
                 startGameButton.setVisible(true);
+                settingsButton.setVisible(true);
                 startGameButton.addClickListener(e -> {
                     gameHolder.setStarted(true);
                     Collection<GameContentView> views = gameHolder.getViews();
@@ -91,6 +127,16 @@ public class MobileMultiPlayerView extends AppLayout implements HasUrlParameter<
                     }
                     players.forEach(Tetris::start);
                     startGameButton.setVisible(false);
+                    settingsButton.setVisible(false);
+                    textField.focus();
+                });
+
+                settingsButton.addClickListener(e -> {
+                    Dialog dialog = new Dialog(new SettingsView(gameHolder.getSettings()));
+                    Button ok = new Button("Ok", e1 -> dialog.close());
+                    ok.addClickShortcut(Key.ENTER);
+                    dialog.add(new HorizontalLayout(ok, new Button("Cancel", e2 -> dialog.close())));
+                    dialog.open();
                 });
             }
         }));
@@ -132,10 +178,11 @@ public class MobileMultiPlayerView extends AppLayout implements HasUrlParameter<
             }));
 
 
-            TextField textField = new TextField("min3 max9 symbols");
+            TextField textField = new TextField();
             textField.setLabel("Name");
             textField.setMaxLength(9);
-            textField.setMinLength(3);
+            textField.setMinLength(2);
+            textField.setErrorMessage("min: " + textField.getMinLength() + " - max: " + textField.getMaxLength());
             textField.setAutofocus(true);
             VerticalLayout verticalLayout = new VerticalLayout(textField, select);
             Dialog dialog = new Dialog();
