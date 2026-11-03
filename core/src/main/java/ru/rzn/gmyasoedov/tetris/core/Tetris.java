@@ -75,15 +75,18 @@ public class Tetris {
 
     public void start() {
         lock.lock();
-        if (state != State.NEW) {
-            throw new IllegalStateException(format("state should be %s but state %s", State.NEW, state));
+        try {
+            if (state != State.NEW) {
+                throw new IllegalStateException(format("state should be %s but state %s", State.NEW, state));
+            }
+            state = State.GAME;
+            generateFigure();
+            initField();
+            gameThread = new Thread(this::game);
+            gameThread.start();
+        } finally {
+            lock.unlock();
         }
-        state = State.GAME;
-        generateFigure();
-        initField();
-        gameThread = new Thread(this::game);
-        gameThread.start();
-        lock.unlock();
     }
 
     private void initField() {
@@ -213,9 +216,9 @@ public class Tetris {
             gameThread = null;
             state = State.OVER;
             notifyObserves();
-            observable.clear();
         } finally {
             lock.unlock();
+            observable.clear();
         }
     }
 
@@ -253,10 +256,10 @@ public class Tetris {
 
     public void rotate() {
         lock.lock();
-        if (state != State.GAME) {
-            return;
-        }
         try {
+            if (state != State.GAME) {
+                return;
+            }
             rotateInner(Figure::getNextRotate, Figure::rotate);
         } finally {
             lock.unlock();
@@ -265,10 +268,10 @@ public class Tetris {
 
     public void rotateReverse() {
         lock.lock();
-        if (state != State.GAME) {
-            return;
-        }
         try {
+            if (state != State.GAME) {
+                return;
+            }
             rotateInner(Figure::getNextRotateReverse, Figure::rotateReverse);
         } finally {
             lock.unlock();
@@ -286,16 +289,19 @@ public class Tetris {
     public void setLevel(int newLevel) {
         if (newLevel < 2 || newLevel > 10) return;
         lock.lock();
-        if (newLevel > level) {
-            level = newLevel;
-            var newSpeed = Math.max(SLEEP_TIME - (tetrisSettings.getSpeedDelta() * (level - 1)), BOOST_SPEED);
-            if (speedTmp > 0) {
-                speedTmp = newSpeed;
-            } else {
-                speed = newSpeed;
+        try {
+            if (newLevel > level) {
+                level = newLevel;
+                var newSpeed = Math.max(SLEEP_TIME - (tetrisSettings.getSpeedDelta() * (level - 1)), BOOST_SPEED);
+                if (speedTmp > 0) {
+                    speedTmp = newSpeed;
+                } else {
+                    speed = newSpeed;
+                }
             }
+        } finally {
+            lock.unlock();
         }
-        lock.unlock();
     }
 
     public void addRow() {

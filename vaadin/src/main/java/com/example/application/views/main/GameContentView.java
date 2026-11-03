@@ -31,6 +31,10 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
     private boolean mobile;
     private GameHolder holder;
 
+    public Tetris getTetris() {
+        return tetris;
+    }
+
     public void addKeyListeners() {
         UI.getCurrent().addShortcutListener(e -> {
             if (tetris != null) tetris.toLeft();
@@ -66,7 +70,7 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
     }
 
     public void renderView(GameHolder gameHolder, boolean showSoftButton) {
-        //todo auto sacale
+        //todo auto scale
         /*UI.getCurrent().getPage().retrieveExtendedClientDetails(receiver -> {
             int screenWidth = receiver.getScreenWidth();
             // do something with screen width
@@ -87,7 +91,7 @@ public class GameContentView extends VerticalLayout implements KeyNotifier, Deta
             List<TetrisView> tetrisViews = new ArrayList<>(gameHolder.getPlayers().size());
             gameHolder.getPlayers().forEach(tetris -> {
                 TetrisView tetrisView = new TetrisView(cellSizePixels, tetris.getId(),
-                        gameHolder.getGameColor(tetris.getId()));
+                        gameHolder.getGameColor(sessionId));
                 tetrisViews.add(tetrisView);
                 viewMap.put(tetris.getId(), tetrisView);
             });

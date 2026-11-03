@@ -5,6 +5,7 @@ import com.example.application.service.GameHolderService;
 import com.example.application.service.Utils;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -16,6 +17,10 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import ru.rzn.gmyasoedov.tetris.core.Tetris;
+
+import java.util.UUID;
+
+import static com.example.application.service.Utils.createMainViewButton;
 
 @Route("singleplayer")
 public class SinglePlayerView extends AppLayout implements HasUrlParameter<String> {
@@ -55,6 +60,8 @@ public class SinglePlayerView extends AppLayout implements HasUrlParameter<Strin
         header.add(textField);
         header.add(logo);
         header.add(new H1("Tetris single player"));
+        header.add(createMainViewButton(gameContentView));
+
         return header;
     }
 
